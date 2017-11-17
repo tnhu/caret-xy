@@ -1,0 +1,13 @@
+{
+  "name": "caret-xy",
+  "version": "0.1.0",
+  "description": "Get input/textarea caret coordinates",
+  "main": "dist/caret-xy.js",
+  "scripts": {
+    "build": "tsc caret-xy.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015,DOM --declaration"
+  },
+  "author": "Tan Nhu",
+  "devDependencies": {
+    "typescript": "^2.6.1"
+  }
+}
