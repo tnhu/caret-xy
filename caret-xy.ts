@@ -126,11 +126,11 @@ export default function caretXY(element, position) {
   div.appendChild(span)
 
   const rect = element.getBoundingClientRect()
-  const caretHeight = lineHeightInPixels(computed.lineHeight, computed.fontSize)
 
   var coordinates = {
-    top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']) + caretHeight,
-    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
+    top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
+    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']),
+    height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
   }
 
   body.removeChild(div)
