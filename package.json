@@ -1,13 +1,16 @@
 {
   "name": "caret-xy",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Get input/textarea caret coordinates",
+  "license": "MIT",
   "main": "dist/caret-xy.js",
   "scripts": {
-    "build": "tsc caret-xy.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015,DOM --declaration"
+    "build": "tsc caret-xy.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015,DOM --declaration",
+    "watch": "chokidar '*.ts' -c 'yarn build'"
   },
   "author": "Tan Nhu",
   "devDependencies": {
+    "chokidar-cli": "^1.2.0",
     "typescript": "^2.6.1"
   }
 }

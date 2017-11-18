@@ -1,3 +1,5 @@
+const root = document.documentElement
+const body = document.body
 let remToPixelRatio
 
 function toPixels(value, contextElementFontSize) {
@@ -15,7 +17,7 @@ function toPixels(value, contextElementFontSize) {
     pixels *= 16
   } else if (value.indexOf('rem') !== -1) {
     if (!remToPixelRatio) {
-      remToPixelRatio = parseFloat(getComputedStyle(document.documentElement).fontSize)
+      remToPixelRatio = parseFloat(getComputedStyle(root).fontSize)
     }
     pixels *= remToPixelRatio
   } else if (value.indexOf('em') !== -1) {
@@ -79,9 +81,11 @@ const properties = [
 ]
 
 export default function caretXY(element, position) {
+  position = position || element.selectionEnd
+
   // mirrored div
   var div = document.createElement('div')
-  div.id = 'input-textarea-caret-position-mirror-div'
+  div.id = 'input-textarea-caret-position-mirror-div' + (+new Date())
   document.body.appendChild(div)
 
   var style = div.style
@@ -121,13 +125,15 @@ export default function caretXY(element, position) {
   span.textContent = element.value.substring(position) || '.' // || because a compvarely empty faux span doesn't render at all
   div.appendChild(span)
 
+  const rect = element.getBoundingClientRect()
+  const caretHeight = lineHeightInPixels(computed.lineHeight, computed.fontSize)
+
   var coordinates = {
-    top: span.offsetTop + parseInt(computed['borderTopWidth']),
-    left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
-    height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
+    top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']) + caretHeight,
+    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
   }
 
-  document.body.removeChild(div)
+  body.removeChild(div)
 
   return coordinates
 }

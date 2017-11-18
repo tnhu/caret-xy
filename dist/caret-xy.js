@@ -1,5 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+var root = document.documentElement;
+var body = document.body;
 var remToPixelRatio;
 function toPixels(value, contextElementFontSize) {
     var pixels = parseFloat(value);
@@ -20,7 +22,7 @@ function toPixels(value, contextElementFontSize) {
     }
     else if (value.indexOf('rem') !== -1) {
         if (!remToPixelRatio) {
-            remToPixelRatio = parseFloat(getComputedStyle(document.documentElement).fontSize);
+            remToPixelRatio = parseFloat(getComputedStyle(root).fontSize);
         }
         pixels *= remToPixelRatio;
     }
@@ -74,9 +76,10 @@ var properties = [
     'MozTabSize'
 ];
 function caretXY(element, position) {
+    position = position || element.selectionEnd;
     // mirrored div
     var div = document.createElement('div');
-    div.id = 'input-textarea-caret-position-mirror-div';
+    div.id = 'input-textarea-caret-position-mirror-div' + (+new Date());
     document.body.appendChild(div);
     var style = div.style;
     var computed = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle; // currentStyle for IE < 9
@@ -110,12 +113,13 @@ function caretXY(element, position) {
     // for inputs, just '.' would be enough, but why bother?
     span.textContent = element.value.substring(position) || '.'; // || because a compvarely empty faux span doesn't render at all
     div.appendChild(span);
+    var rect = element.getBoundingClientRect();
+    var caretHeight = lineHeightInPixels(computed.lineHeight, computed.fontSize);
     var coordinates = {
-        top: span.offsetTop + parseInt(computed['borderTopWidth']),
-        left: span.offsetLeft + parseInt(computed['borderLeftWidth']),
-        height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
+        top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']) + caretHeight,
+        left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
     };
-    document.body.removeChild(div);
+    body.removeChild(div);
     return coordinates;
 }
 exports.default = caretXY;
