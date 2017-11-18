@@ -114,10 +114,10 @@ function caretXY(element, position) {
     span.textContent = element.value.substring(position) || '.'; // || because a compvarely empty faux span doesn't render at all
     div.appendChild(span);
     var rect = element.getBoundingClientRect();
-    var caretHeight = lineHeightInPixels(computed.lineHeight, computed.fontSize);
     var coordinates = {
-        top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']) + caretHeight,
-        left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
+        top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
+        left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']),
+        height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
     };
     body.removeChild(div);
     return coordinates;
