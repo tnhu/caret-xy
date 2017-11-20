@@ -1,11 +1,12 @@
 {
   "name": "caret-xy",
-  "version": "1.1.1",
+  "version": "1.1.4",
   "description": "Get input/textarea caret coordinates",
   "license": "MIT",
   "main": "dist/caret-xy.js",
+  "types": "dist/caret-xy.d.ts",
   "scripts": {
-    "build": "tsc caret-xy.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015,DOM --declaration",
+    "build": "tsc caret-xy.ts --outDir ./dist --sourceMap --target ES5 --lib ES2015,DOM --declaration --removeComments true",
     "watch": "chokidar '*.ts' -c 'yarn build'"
   },
   "author": "Tan Nhu",

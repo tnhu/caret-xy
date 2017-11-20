@@ -2,6 +2,12 @@ const root = document.documentElement
 const body = document.body
 let remToPixelRatio
 
+export interface CaretInfo {
+  top: number,
+  left: number,
+  height: number
+}
+
 function toPixels(value, contextElementFontSize) {
   var pixels = parseFloat(value)
 
@@ -80,8 +86,9 @@ const properties = [
   'MozTabSize'
 ]
 
-export default function caretXY(element, position) {
-  position = position || element.selectionEnd
+export default function caretXY(element, position = element.selectionEnd): CaretInfo {
+  const nodeName = element.nodeName.toLowerCase()
+  const isInput = nodeName === 'input'
 
   // mirrored div
   var div = document.createElement('div')
@@ -93,7 +100,7 @@ export default function caretXY(element, position) {
 
   // default textarea styles
   style.whiteSpace = 'pre-wrap'
-  if (element.nodeName !== 'INPUT') style.wordWrap = 'break-word' // only for textarea-s
+  if (!isInput) style.wordWrap = 'break-word' // only for textarea-s
 
   // position off-screen
   style.position = 'absolute' // required to return coordinates properly
@@ -104,7 +111,8 @@ export default function caretXY(element, position) {
     style[prop] = computed[prop]
   })
 
-  /*if (window.mozInnerScreenX != null) {
+  /* Latest Firefox does not have moz* anymore
+  if (window.mozInnerScreenX != null) {
     // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
     if (element.scrollHeight > parseInt(computed.height)) style.overflowY = 'scroll'
   } else {
@@ -114,7 +122,7 @@ export default function caretXY(element, position) {
 
   div.textContent = element.value.substring(0, position)
   // the second special handling for input type="text" vs textarea: spaces need to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
-  if (element.nodeName === 'INPUT') div.textContent = div.textContent.replace(/\s/g, '\u00a0')
+  if (isInput) div.textContent = div.textContent.replace(/\s/g, '\u00a0')
 
   var span = document.createElement('span')
   // Wrapping must be replicated *exactly*, including when a long word gets
@@ -126,10 +134,11 @@ export default function caretXY(element, position) {
   div.appendChild(span)
 
   const rect = element.getBoundingClientRect()
+  const scrollLeft = isInput ? div.scrollLeft : 0 // Fix wrong caret position when it's at the end of the input (with more content on the left side) (TODO: This might break RTL support)
 
   var coordinates = {
     top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
-    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']),
+    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']) - scrollLeft,
     height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
   }
 
