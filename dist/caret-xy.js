@@ -92,10 +92,10 @@ function caretXY(element, position) {
     span.textContent = element.value.substring(position) || '.';
     div.appendChild(span);
     var rect = element.getBoundingClientRect();
-    var scrollLeft = isInput ? div.scrollLeft : 0;
+    var left = rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']);
     var coordinates = {
         top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
-        left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']) - scrollLeft,
+        left: rect.right > left ? left : rect.right,
         height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
     };
     body.removeChild(div);

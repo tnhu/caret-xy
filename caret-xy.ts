@@ -134,11 +134,13 @@ export default function caretXY(element, position = element.selectionEnd): Caret
   div.appendChild(span)
 
   const rect = element.getBoundingClientRect()
-  const scrollLeft = isInput ? div.scrollLeft : 0 // Fix wrong caret position when it's at the end of the input (with more content on the left side) (TODO: This might break RTL support)
+
+  // Fix wrong caret position when it's at the end of the input (with more content on the left side) (TODO: This might break RTL support)
+  const left = rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
 
   var coordinates = {
     top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
-    left: rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth']) - scrollLeft,
+    left: rect.right > left ? left : rect.right,
     height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
   }
 
