@@ -3,8 +3,8 @@ const body = document.body
 let remToPixelRatio
 
 export interface CaretInfo {
-  top: number,
-  left: number,
+  top: number
+  left: number
   height: number
 }
 
@@ -92,11 +92,11 @@ export default function caretXY(element, position = element.selectionEnd): Caret
 
   // mirrored div
   var div = document.createElement('div')
-  div.id = 'input-textarea-caret-position-mirror-div' + (+new Date())
-  document.body.appendChild(div)
+  div.id = 'input-textarea-caret-position-mirror-div' + +new Date()
+  body.appendChild(div)
 
   var style = div.style
-  var computed = window.getComputedStyle ? getComputedStyle(element) : element.currentStyle // currentStyle for IE < 9
+  var computed = getComputedStyle(element)
 
   // default textarea styles
   style.whiteSpace = 'pre-wrap'
@@ -111,13 +111,6 @@ export default function caretXY(element, position = element.selectionEnd): Caret
     style[prop] = computed[prop]
   })
 
-  /* Latest Firefox does not have moz* anymore
-  if (window.mozInnerScreenX != null) {
-    // Firefox lies about the overflow property for textareas: https://bugzilla.mozilla.org/show_bug.cgi?id=984275
-    if (element.scrollHeight > parseInt(computed.height)) style.overflowY = 'scroll'
-  } else {
-    style.overflow = 'hidden' // for Chrome to not render a scrollbar; IE keeps overflowY = 'scroll'
-  }*/
   style.overflow = 'hidden'
 
   div.textContent = element.value.substring(0, position)
@@ -133,18 +126,39 @@ export default function caretXY(element, position = element.selectionEnd): Caret
   span.textContent = element.value.substring(position) || '.' // || because a compvarely empty faux span doesn't render at all
   div.appendChild(span)
 
-  const rect = element.getBoundingClientRect()
+  const absolute = true
+  let left = span.offsetLeft + parseInt(computed['borderLeftWidth']) - element.scrollLeft
+  let top = span.offsetTop + parseInt(computed['borderTopWidth']) - element.scrollTop
+  const height = lineHeightInPixels(computed.lineHeight, computed.fontSize)
 
-  // Fix wrong caret position when it's at the end of the input (with more content on the left side) (TODO: This might break RTL support)
-  const left = rect.left + span.offsetLeft + parseInt(computed['borderLeftWidth'])
-
-  var coordinates = {
-    top: root.scrollTop + rect.top + span.offsetTop + parseInt(computed['borderTopWidth']),
-    left: rect.right > left ? left : rect.right,
-    height: lineHeightInPixels(computed.lineHeight, computed.fontSize)
+  if (absolute) {
+    var rect = element.getBoundingClientRect()
+    left += rect.left
+    top += rect.top
+  } else {
+    // TODO Test if this is necessary
+    left += element.offsetLeft
+    top += element.offsetTop
   }
 
   body.removeChild(div)
 
-  return coordinates
+  return { top, left, height }
+}
+
+if (!!localStorage.DEBUG_CARET_XY) {
+  const span = body.appendChild(document.createElement('span'))
+
+  span.style.cssText =
+    'position: absolute; display: inline-block; margin: 0; padding: 0; height: 16px; width: 1px; background: red; z-index: 99999;'
+
+  document.addEventListener('input', e => {
+    const xy = caretXY(e.target)
+
+    span.style.top = xy.top + 'px'
+    span.style.left = xy.left + 'px'
+    span.style.height = xy.height + 'px'
+
+    body.appendChild(span)
+  })
 }
