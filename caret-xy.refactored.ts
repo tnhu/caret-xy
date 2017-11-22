@@ -91,7 +91,7 @@ function getMirrorInfo(element, isInput) {
     return element.mirrorInfo
   }
 
-  const div = document.createElement('div')
+  const div = body.appendChild(document.createElement('div'))
   const style = div.style
   const computedStyles = getComputedStyle(element)
 
@@ -103,8 +103,6 @@ function getMirrorInfo(element, isInput) {
 
   properties.forEach(prop => style[prop] = computedStyles[prop])
   style.overflow = 'hidden' // Do we need to copy overflowX, overflowY if this is set?
-
-  body.appendChild(div)
 
   // Cache mirror info so we don't create elements and invoke getComputedStyle() again and again
   element.mirrorInfo = { div, span: document.createElement('span'), computedStyles }
@@ -125,6 +123,8 @@ export default function caretXY(element, position = element.selectionEnd): Caret
   const { div, span, computedStyles } = getMirrorInfo(element, isInput)
   const content = element.value.substring(0, position)
 
+  body.appendChild(div)
+
   // For input, text content needs to be replaced with non-breaking spaces - http://stackoverflow.com/a/13402035/1269037
   div.textContent = isInput ? content.replace(/\s/g, '\u00a0') : content
 
@@ -136,13 +136,20 @@ export default function caretXY(element, position = element.selectionEnd): Caret
   span.textContent = element.value.substring(position) || '.' // || because a completely empty faux span doesn't render at all
   div.appendChild(span)
 
+  const absolute = true
   let left = span.offsetLeft + parseInt(computedStyles['borderLeftWidth']) - element.scrollLeft
   let top = span.offsetTop + parseInt(computedStyles['borderTopWidth']) - element.scrollTop
   const height = lineHeightInPixels(computedStyles.lineHeight, computedStyles.fontSize)
 
-  const rect = element.getBoundingClientRect()
-  left += rect.left
-  top += rect.top + root.scrollTop
+  if (absolute) {
+    var rect = element.getBoundingClientRect()
+    left += rect.left
+    top += rect.top
+  } else {
+    // TODO Test if this is necessary
+    left += element.offsetLeft
+    top += element.offsetTop
+  }
 
   return { top, left, height }
 }
@@ -153,17 +160,13 @@ if (!!localStorage.DEBUG_CARET_XY) {
   span.style.cssText =
     'position: absolute; display: inline-block; margin: 0; padding: 0; height: 16px; width: 1px; background: red; z-index: 99999;'
 
-  document.addEventListener('keydown', e => {
-    const nodeName = (e.target as Element).nodeName.toLowerCase()
+  document.addEventListener('input', e => {
+    const xy = caretXY(e.target)
 
-    if (nodeName === 'input' || nodeName === 'textarea') {
-      const xy = caretXY(e.target)
+    span.style.top = xy.top + 'px'
+    span.style.left = xy.left + 'px'
+    span.style.height = xy.height + 'px'
 
-      span.style.top = xy.top + 'px'
-      span.style.left = xy.left + 'px'
-      span.style.height = xy.height + 'px'
-
-      body.appendChild(span)
-    }
+    body.appendChild(span)
   })
 }

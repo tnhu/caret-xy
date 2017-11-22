@@ -1,6 +1,6 @@
 {
   "name": "caret-xy",
-  "version": "1.1.6",
+  "version": "1.1.11",
   "description": "Get input/textarea caret coordinates",
   "license": "MIT",
   "main": "dist/caret-xy.js",

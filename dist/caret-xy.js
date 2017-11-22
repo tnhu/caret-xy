@@ -67,44 +67,43 @@ var properties = [
     'tabSize',
     'MozTabSize'
 ];
-function caretXY(element, position) {
-    if (position === void 0) { position = element.selectionEnd; }
-    var nodeName = element.nodeName.toLowerCase();
-    var isInput = nodeName === 'input';
+function getMirrorInfo(element, isInput) {
+    if (element.mirrorInfo) {
+        return element.mirrorInfo;
+    }
     var div = document.createElement('div');
-    div.id = 'input-textarea-caret-position-mirror-div' + +new Date();
-    body.appendChild(div);
     var style = div.style;
-    var computed = getComputedStyle(element);
+    var computedStyles = getComputedStyle(element);
     style.whiteSpace = 'pre-wrap';
     if (!isInput)
         style.wordWrap = 'break-word';
     style.position = 'absolute';
     style.visibility = 'hidden';
-    properties.forEach(function (prop) {
-        style[prop] = computed[prop];
-    });
+    properties.forEach(function (prop) { return style[prop] = computedStyles[prop]; });
     style.overflow = 'hidden';
-    div.textContent = element.value.substring(0, position);
-    if (isInput)
-        div.textContent = div.textContent.replace(/\s/g, '\u00a0');
-    var span = document.createElement('span');
+    body.appendChild(div);
+    element.mirrorInfo = { div: div, span: document.createElement('span'), computedStyles: computedStyles };
+    element.addEventListener('focusout', function cleanup() {
+        delete element.mirrorInfo;
+        body.removeChild(div);
+        element.removeEventListener('focusout', cleanup);
+    });
+    return element.mirrorInfo;
+}
+function caretXY(element, position) {
+    if (position === void 0) { position = element.selectionEnd; }
+    var isInput = element.nodeName.toLowerCase() === 'input';
+    var _a = getMirrorInfo(element, isInput), div = _a.div, span = _a.span, computedStyles = _a.computedStyles;
+    var content = element.value.substring(0, position);
+    div.textContent = isInput ? content.replace(/\s/g, '\u00a0') : content;
     span.textContent = element.value.substring(position) || '.';
     div.appendChild(span);
-    var absolute = true;
-    var left = span.offsetLeft + parseInt(computed['borderLeftWidth']) - element.scrollLeft;
-    var top = span.offsetTop + parseInt(computed['borderTopWidth']) - element.scrollTop;
-    var height = lineHeightInPixels(computed.lineHeight, computed.fontSize);
-    if (absolute) {
-        var rect = element.getBoundingClientRect();
-        left += rect.left;
-        top += rect.top;
-    }
-    else {
-        left += element.offsetLeft;
-        top += element.offsetTop;
-    }
-    body.removeChild(div);
+    var left = span.offsetLeft + parseInt(computedStyles['borderLeftWidth']) - element.scrollLeft;
+    var top = span.offsetTop + parseInt(computedStyles['borderTopWidth']) - element.scrollTop;
+    var height = lineHeightInPixels(computedStyles.lineHeight, computedStyles.fontSize);
+    var rect = element.getBoundingClientRect();
+    left += rect.left;
+    top += rect.top + root.scrollTop;
     return { top: top, left: left, height: height };
 }
 exports.default = caretXY;
@@ -112,12 +111,15 @@ if (!!localStorage.DEBUG_CARET_XY) {
     var span_1 = body.appendChild(document.createElement('span'));
     span_1.style.cssText =
         'position: absolute; display: inline-block; margin: 0; padding: 0; height: 16px; width: 1px; background: red; z-index: 99999;';
-    document.addEventListener('input', function (e) {
-        var xy = caretXY(e.target);
-        span_1.style.top = xy.top + 'px';
-        span_1.style.left = xy.left + 'px';
-        span_1.style.height = xy.height + 'px';
-        body.appendChild(span_1);
+    document.addEventListener('keydown', function (e) {
+        var nodeName = e.target.nodeName.toLowerCase();
+        if (nodeName === 'input' || nodeName === 'textarea') {
+            var xy = caretXY(e.target);
+            span_1.style.top = xy.top + 'px';
+            span_1.style.left = xy.left + 'px';
+            span_1.style.height = xy.height + 'px';
+            body.appendChild(span_1);
+        }
     });
 }
 //# sourceMappingURL=caret-xy.js.map
