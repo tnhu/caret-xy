@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 var root = document.documentElement;
 var body = document.body;
 var remToPixelRatio;
-function toPixels(value, contextElementFontSize) {
+function toPixels(value, elementFontSize) {
     var pixels = parseFloat(value);
     if (value.indexOf('pt') !== -1) {
         pixels = pixels * 4 / 3;
@@ -27,14 +27,14 @@ function toPixels(value, contextElementFontSize) {
         pixels *= remToPixelRatio;
     }
     else if (value.indexOf('em') !== -1) {
-        pixels = contextElementFontSize ? pixels * parseFloat(contextElementFontSize) : toPixels(pixels + 'rem', contextElementFontSize);
+        pixels = elementFontSize ? pixels * parseFloat(elementFontSize) : toPixels(pixels + 'rem', elementFontSize);
     }
     return pixels;
 }
-function lineHeightInPixels(lineHeight, contextElementFontSize) {
-    return lineHeight === 'normal' ? 1.2 * parseInt(contextElementFontSize, 10) : toPixels(lineHeight, contextElementFontSize);
+function lineHeightInPixels(lineHeight, elementFontSize) {
+    return lineHeight === 'normal' ? 1.2 * parseInt(elementFontSize, 10) : toPixels(lineHeight, elementFontSize);
 }
-var properties = [
+var mirrorAttributes = [
     'direction',
     'boxSizing',
     'width',
@@ -74,52 +74,37 @@ function getMirrorInfo(element, isInput) {
     var div = document.createElement('div');
     var style = div.style;
     var computedStyles = getComputedStyle(element);
+    var hidden = 'hidden';
+    var focusOut = 'focusout';
     style.whiteSpace = 'pre-wrap';
     if (!isInput)
         style.wordWrap = 'break-word';
     style.position = 'absolute';
-    style.visibility = 'hidden';
-    properties.forEach(function (prop) { return style[prop] = computedStyles[prop]; });
-    style.overflow = 'hidden';
+    style.visibility = hidden;
+    mirrorAttributes.forEach(function (prop) { return style[prop] = computedStyles[prop]; });
+    style.overflow = hidden;
     body.appendChild(div);
     element.mirrorInfo = { div: div, span: document.createElement('span'), computedStyles: computedStyles };
-    element.addEventListener('focusout', function cleanup() {
+    element.addEventListener(focusOut, function cleanup() {
         delete element.mirrorInfo;
         body.removeChild(div);
-        element.removeEventListener('focusout', cleanup);
+        element.removeEventListener(focusOut, cleanup);
     });
     return element.mirrorInfo;
 }
-function caretXY(element, position) {
-    if (position === void 0) { position = element.selectionEnd; }
+function caretXY(element) {
+    var position = element.selectionEnd;
     var isInput = element.nodeName.toLowerCase() === 'input';
     var _a = getMirrorInfo(element, isInput), div = _a.div, span = _a.span, computedStyles = _a.computedStyles;
     var content = element.value.substring(0, position);
     div.textContent = isInput ? content.replace(/\s/g, '\u00a0') : content;
     span.textContent = element.value.substring(position) || '.';
     div.appendChild(span);
-    var left = span.offsetLeft + parseInt(computedStyles['borderLeftWidth']) - element.scrollLeft;
-    var top = span.offsetTop + parseInt(computedStyles['borderTopWidth']) - element.scrollTop;
-    var height = lineHeightInPixels(computedStyles.lineHeight, computedStyles.fontSize);
     var rect = element.getBoundingClientRect();
-    left += rect.left;
-    top += rect.top + root.scrollTop;
+    var top = span.offsetTop + parseInt(computedStyles.borderTopWidth) - element.scrollTop + rect.top;
+    var left = span.offsetLeft + parseInt(computedStyles.borderLeftWidth) - element.scrollLeft + rect.left;
+    var height = lineHeightInPixels(computedStyles.lineHeight, computedStyles.fontSize);
     return { top: top, left: left, height: height };
 }
 exports.default = caretXY;
-if (!!localStorage.DEBUG_CARET_XY) {
-    var span_1 = body.appendChild(document.createElement('span'));
-    span_1.style.cssText =
-        'position: absolute; display: inline-block; margin: 0; padding: 0; height: 16px; width: 1px; background: red; z-index: 99999;';
-    document.addEventListener('keydown', function (e) {
-        var nodeName = e.target.nodeName.toLowerCase();
-        if (nodeName === 'input' || nodeName === 'textarea') {
-            var xy = caretXY(e.target);
-            span_1.style.top = xy.top + 'px';
-            span_1.style.left = xy.left + 'px';
-            span_1.style.height = xy.height + 'px';
-            body.appendChild(span_1);
-        }
-    });
-}
 //# sourceMappingURL=caret-xy.js.map

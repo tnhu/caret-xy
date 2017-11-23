@@ -2,13 +2,13 @@ const root = document.documentElement
 const body = document.body
 let remToPixelRatio
 
-export interface CaretInfo {
+export interface CaretPosition {
   top: number
   left: number
   height: number
 }
 
-function toPixels(value, contextElementFontSize) {
+function toPixels(value, elementFontSize) {
   var pixels = parseFloat(value)
 
   if (value.indexOf('pt') !== -1) {
@@ -27,25 +27,25 @@ function toPixels(value, contextElementFontSize) {
     }
     pixels *= remToPixelRatio
   } else if (value.indexOf('em') !== -1) {
-    pixels = contextElementFontSize ? pixels * parseFloat(contextElementFontSize) : toPixels(pixels + 'rem', contextElementFontSize)
+    pixels = elementFontSize ? pixels * parseFloat(elementFontSize) : toPixels(pixels + 'rem', elementFontSize)
   }
 
   return pixels
 }
 
-function lineHeightInPixels(lineHeight, contextElementFontSize) {
-  return lineHeight === 'normal' ? 1.2 * parseInt(contextElementFontSize, 10) : toPixels(lineHeight, contextElementFontSize)
+function lineHeightInPixels(lineHeight, elementFontSize) {
+  return lineHeight === 'normal' ? 1.2 * parseInt(elementFontSize, 10) : toPixels(lineHeight, elementFontSize)
 }
 
 // Original source from `textarea-caret-position`
 // https://github.com/component/textarea-caret-position
 // MIT, Copyright (c) 2015 Jonathan Ong me@jongleberry.com
 
-// The properties that we copy into a mirrored div.
+// The attributes that we copy into a mirrored div.
 // Note that some browsers, such as Firefox,
 // do not concatenate properties, i.e. padding-top, bottom etc. -> padding,
 // so we have to do every single property specifically.
-const properties = [
+const mirrorAttributes = [
   'direction', // RTL support
   'boxSizing',
   'width', // on Chrome and IE, exclude the scrollbar, so the mirror div wraps exactly as the textarea does
@@ -94,15 +94,17 @@ function getMirrorInfo(element, isInput) {
   const div = document.createElement('div')
   const style = div.style
   const computedStyles = getComputedStyle(element)
+  const hidden = 'hidden'
+  const focusOut = 'focusout'
 
   style.whiteSpace = 'pre-wrap'
   if (!isInput) style.wordWrap = 'break-word' // only for textarea
 
   style.position = 'absolute'
-  style.visibility = 'hidden' // not 'display: none' because we want rendering
+  style.visibility = hidden // not 'display: none' because we want rendering
 
-  properties.forEach(prop => style[prop] = computedStyles[prop])
-  style.overflow = 'hidden' // Do we need to copy overflowX, overflowY if this is set?
+  mirrorAttributes.forEach(prop => style[prop] = computedStyles[prop])
+  style.overflow = hidden // Do we need to copy overflowX, overflowY if this is set?
 
   body.appendChild(div)
 
@@ -110,17 +112,17 @@ function getMirrorInfo(element, isInput) {
   element.mirrorInfo = { div, span: document.createElement('span'), computedStyles }
 
   // Remove cached mirror div when element is out of focus
-  element.addEventListener('focusout', function cleanup() {
+  element.addEventListener(focusOut, function cleanup() {
     delete element.mirrorInfo
     body.removeChild(div)
-    element.removeEventListener('focusout', cleanup)
-  }
-)
+    element.removeEventListener(focusOut, cleanup)
+  })
 
   return element.mirrorInfo
 }
 
-export default function caretXY(element, position = element.selectionEnd): CaretInfo {
+export default function caretXY(element): CaretPosition {
+  const position = element.selectionEnd
   const isInput = element.nodeName.toLowerCase() === 'input'
   const { div, span, computedStyles } = getMirrorInfo(element, isInput)
   const content = element.value.substring(0, position)
@@ -131,39 +133,15 @@ export default function caretXY(element, position = element.selectionEnd): Caret
   // Wrapping must be replicated *exactly*, including when a long word gets
   // onto the next line, with whitespace at the end of the line before (#7).
   // The  *only* reliable way to do that is to copy the *entire* rest of the
-  // textarea's content into the <span> created at the caret position.
+  // textarea content into the <span> created at the caret position.
   // for inputs, just '.' would be enough, but why bother?
   span.textContent = element.value.substring(position) || '.' // || because a completely empty faux span doesn't render at all
   div.appendChild(span)
 
-  let left = span.offsetLeft + parseInt(computedStyles['borderLeftWidth']) - element.scrollLeft
-  let top = span.offsetTop + parseInt(computedStyles['borderTopWidth']) - element.scrollTop
+  const rect = element.getBoundingClientRect()
+  const top = span.offsetTop + parseInt(computedStyles.borderTopWidth) - element.scrollTop + rect.top
+  const left = span.offsetLeft + parseInt(computedStyles.borderLeftWidth) - element.scrollLeft + rect.left
   const height = lineHeightInPixels(computedStyles.lineHeight, computedStyles.fontSize)
 
-  const rect = element.getBoundingClientRect()
-  left += rect.left
-  top += rect.top + root.scrollTop
-
   return { top, left, height }
-}
-
-if (!!localStorage.DEBUG_CARET_XY) {
-  const span = body.appendChild(document.createElement('span'))
-
-  span.style.cssText =
-    'position: absolute; display: inline-block; margin: 0; padding: 0; height: 16px; width: 1px; background: red; z-index: 99999;'
-
-  document.addEventListener('keydown', e => {
-    const nodeName = (e.target as Element).nodeName.toLowerCase()
-
-    if (nodeName === 'input' || nodeName === 'textarea') {
-      const xy = caretXY(e.target)
-
-      span.style.top = xy.top + 'px'
-      span.style.left = xy.left + 'px'
-      span.style.height = xy.height + 'px'
-
-      body.appendChild(span)
-    }
-  })
 }
