@@ -10,6 +10,11 @@
     "watch": "chokidar '*.ts' -c 'yarn build'"
   },
   "author": "Tan Nhu",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tnhu/caret-xy.git"
+  },
+  "homepage": "https://github.com/tnhu/caret-xy",
   "devDependencies": {
     "chokidar-cli": "^1.2.0",
     "typescript": "^2.6.1"
