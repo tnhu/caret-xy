@@ -1,6 +1,6 @@
 {
   "name": "caret-xy",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Viewport-based (fixed) caret position for HTML input and textarea elements",
   "license": "MIT",
   "main": "dist/caret-xy.js",
