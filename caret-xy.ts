@@ -121,8 +121,7 @@ function getMirrorInfo(element, isInput) {
   return element.mirrorInfo
 }
 
-export default function caretXY(element): CaretPosition {
-  const position = element.selectionEnd
+export default function caretXY(element, position = element.selectionEnd): CaretPosition {
   const isInput = element.nodeName.toLowerCase() === 'input'
   const { div, span, computedStyles } = getMirrorInfo(element, isInput)
   const content = element.value.substring(0, position)

@@ -10,14 +10,24 @@ or
 yarn add caret-xy
 ```
 
-## Usage
+## API
+
+```javascript
+caretXY(element, position)
+```
+
+- element input or textarea DOM element.
+- position is an integer indicating the location of the caret (defaults to element.selectionEnd).
+
+## Sample
 
 ```javascript
 import caretXY from 'caret-xy'
 
-caretXY(document.querySelector('input'))
+const input = document.querySelector('input')
+caretXY(input)
 ```
 
-## Known Issues
+## Known Issue
 
-- Does not work properly for `<input type="email"/>`, `<input type="password"/>` (`element.selectionEnd` is always `null`).
+- Does not work properly for `<input type="email"/>`, `<input type="password"/>` (`element.selectionEnd` always returns `null`).

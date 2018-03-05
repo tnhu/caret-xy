@@ -3,4 +3,4 @@ export interface CaretPosition {
     left: number;
     height: number;
 }
-export default function caretXY(element: any): CaretPosition;
+export default function caretXY(element: any, position?: any): CaretPosition;

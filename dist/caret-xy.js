@@ -92,8 +92,8 @@ function getMirrorInfo(element, isInput) {
     });
     return element.mirrorInfo;
 }
-function caretXY(element) {
-    var position = element.selectionEnd;
+function caretXY(element, position) {
+    if (position === void 0) { position = element.selectionEnd; }
     var isInput = element.nodeName.toLowerCase() === 'input';
     var _a = getMirrorInfo(element, isInput), div = _a.div, span = _a.span, computedStyles = _a.computedStyles;
     var content = element.value.substring(0, position);
