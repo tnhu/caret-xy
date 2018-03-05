@@ -16,8 +16,8 @@ yarn add caret-xy
 caretXY(element, position)
 ```
 
-- element input or textarea DOM element.
-- position is an integer indicating the location of the caret (defaults to element.selectionEnd).
+- `element` input or textarea DOM element.
+- `position` is an integer indicating the location of the caret (defaults to `element.selectionEnd`).
 
 ## Sample
 
