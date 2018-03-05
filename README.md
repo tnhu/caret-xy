@@ -1,4 +1,4 @@
-Viewport-based (fixed) caret position for HTML input and textarea elements. This project is based on (textarea-caret-position)[https://github.com/component/textarea-caret-position].
+Viewport-based (fixed) caret position for HTML input and textarea elements. This project is based on [textarea-caret-position](https://github.com/component/textarea-caret-position).
 
 ```
 npm i caret-xy
