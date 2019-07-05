@@ -83,6 +83,9 @@ function getMirrorInfo(element, isInput) {
     style.visibility = hidden;
     mirrorAttributes.forEach(function (prop) { return style[prop] = computedStyles[prop]; });
     style.overflow = hidden;
+    if (isInput) {
+        style.whiteSpace = 'nowrap';
+    }
     body.appendChild(div);
     element.mirrorInfo = { div: div, span: document.createElement('span'), computedStyles: computedStyles };
     element.addEventListener(focusOut, function cleanup() {

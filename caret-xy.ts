@@ -106,6 +106,10 @@ function getMirrorInfo(element, isInput) {
   mirrorAttributes.forEach(prop => style[prop] = computedStyles[prop])
   style.overflow = hidden // Do we need to copy overflowX, overflowY if this is set?
 
+  if (isInput) {
+    style.whiteSpace = 'nowrap'
+  }
+
   body.appendChild(div)
 
   // Cache mirror info so we don't create elements and invoke getComputedStyle() again and again
