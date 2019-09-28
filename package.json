@@ -16,7 +16,7 @@
   },
   "homepage": "https://github.com/tnhu/caret-xy",
   "devDependencies": {
-    "chokidar-cli": "^1.2.0",
-    "typescript": "^2.6.1"
+    "chokidar-cli": "^2.0.0",
+    "typescript": "^3.6.3"
   }
 }
